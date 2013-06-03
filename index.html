@@ -1,0 +1,619 @@
+<!--
+Google IO 2012 HTML5 Slide Template
+
+Authors: Eric Bidelman <ebidel@gmail.com>
+         Luke Mahé <lukem@google.com>
+
+URL: https://code.google.com/p/io-2012-slides
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Projections, angles and spectra in Hilbert spaces</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">-->
+  <!--<meta name="viewport" content="width=device-width, initial-scale=1.0">-->
+  <!--This one seems to work all the time, but really small on ipad-->
+  <!--<meta name="viewport" content="initial-scale=0.4">-->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" media="all" href="theme/css/default.css">
+  <link rel="stylesheet" media="only screen and (max-device-width: 480px)" href="theme/css/phone.css">
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->
+  <link rel="stylesheet" media="all" href="theme/css/jsxgraph.css">
+  <script type="text/javascript" src="js/jsxgraphcore.js"></script>
+  <script data-main="js/slides" src="js/require-1.0.8.min.js"></script>
+  <!--MathJax-->
+    <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        TeX: {
+            Macros: {
+                x: '\\mathbf{x}',
+                C: '\\mathbb{C}',
+                R: '\\mathbb{R}',
+                A: '\\mathbf{A}',
+                n: '\\mathbf{n}',
+                i: '\\text{i}',
+                id: '\\mathsf{id}',
+                vsH: '\\mathcal{H}',
+                vsL: '\\mathcal{L}',
+                vsN: '\\mathcal{N}',
+                vsR: '\\mathcal{R}',
+                vsV: '\\mathcal{V}',
+                vsW: '\\mathcal{W}',
+                vsX: '\\mathcal{X}',
+                vsY: '\\mathcal{Y}',
+                ip: ['\\langle #1,#2 \\rangle', 2],
+                ipdots: '\\ip{\\cdot}{\\cdot}',
+                nrm: ['\\| #1 \\|', 1],
+                nrmdot: '\\nrm{\\cdot}',
+                lra: '\\longrightarrow',
+                LRA: '\\Longrightarrow',
+                LLRA: '\\Longleftrightarrow'
+            }
+        },
+        skipStartupTypeset: true
+    });
+    </script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script>
+        document.addEventListener('slideenter', function(e) {
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, e.target]);
+            var next = document.getElementsByClassName('next')[0];
+            if (next) {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, next]);
+            }
+            var past = document.getElementsByClassName('past')[0];
+            if (past) {
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub, past]);
+            }
+        });
+    </script>
+    <!--MathJax end-->
+    <script type="text/javascript">
+        JXG.Options.text.useMathJax = true;
+        function onSlideEnter(slide_id, callback) {
+            document.addEventListener('slideenter', function(e) {
+                if (e.target.id == slide_id) {
+                    callback();
+                }
+            });
+        }
+        function inner(x,y) {
+            return x[0]*y[0]+x[1]*y[1];
+        }
+        function norm(x) {
+            return Math.sqrt(inner(x,x));
+        }
+        // computes a*x+y
+        function daxpy(a, x, y) {
+            return [a*x[0]+y[0], a*x[1]+y[1]];
+        }
+        function proj(X, Y, z) {
+            return daxpy( inner(Y,z)/inner(Y,X), X, [0,0]);
+        }
+        function orth(x) {
+            return [x[1], -x[0]];
+        }
+        function addMathLabel(b, p, text) {
+            return b.create('text', [
+                    function() {return p.X();},
+                    function() {return p.Y();},
+                    function() {return text;}
+                    ]);
+        }
+    </script>
+</head>
+<body style="opacity: 0">
+
+<!--slides class="layout-widescreen"-->
+<slides>
+
+    <slide class="logoslide nobackground">
+        <article class="flexbox vcenter">
+            <!--span><img src="images/google_developers_logo.png"></span-->
+            <span><img src="images/matheon-w-text.svg"></span>
+        </article>
+    </slide>
+
+    <slide class="title-slide segue nobackground">
+        <aside class="gdbar"><img src="images/matheon-logo-color.svg"></aside>
+        <!-- The content of this hgroup is replaced programmatically through the slide_config.json. -->
+        <hgroup class="auto-fadein">
+            <h1 data-config-title><!-- populated from slide_config.json --></h1>
+            <h2 data-config-subtitle><!-- populated from slide_config.json --></h2>
+            <p>
+                <h2 data-config-presenter><!-- populated from slide_config.json --></h2>
+            </p>
+        </hgroup>
+    </slide>
+
+    <slide>
+        <hgroup>
+            <h2>Why projections?</h2>
+        </hgroup>
+        <article>
+            <p>Essentially, they are all around us:</p>
+            <ul>
+                <li>Finite element methods</li>
+                <li>Krylov subspace methods</li>
+                <li>Galerkin / Petrov-Galerkin / Ritz-Galerkin methods</li>
+                <li>Model order reduction methods</li>
+                <li>Multigrid/AMG methods</li>
+                <li>Domain decomposition methods</li>
+                <li>Interpolation</li>
+                <li>Deflation-based methods</li>
+                <li>...</li>
+            </ul>
+            <p>Finite- and infinite-dimensional spaces!</p>
+        </article>
+    </slide>
+    
+    <slide>
+        <hgroup>
+            <h2>So, what are projections?</h2>
+        </hgroup>
+        <article>
+            Let \(\vsH\) be a Hilbert space with 
+            <ul>
+                <li>inner product \(\ipdots\),</li>
+                <li>induced norm \(\nrmdot\) and</li>
+                <li>\(\vsL:=\{L:\vsH\longrightarrow\vsH~|~L~\text{is linear and bounded}\}.\)
+            </ul>
+
+            <div class="box" data-title="Definition">
+                \(P\in\vsL\) is a projection iff \(P^2=P\).
+            </div>
+
+            <p>That's all about it?</p>
+        </article>
+    </slide>
+
+    <slide>
+        <hgroup>
+            <h2>Properties of projections</h2>
+        </hgroup>
+        <article>
+            <p>A projection gives us a unique decomposition of \(\vsH\):</p>
+            <div class="box" data-title="Theorem">
+                \(P=P^2\in\vsL\quad\)<br/>
+                \(\LRA\) both the range \(\vsR(P)\) and the nullspace
+                \(\vsN(P)\) are closed and \(\vsH=\vsR(P)\oplus\vsN(P)\). 
+            </div>
+            <p>Vice versa, a direct sum uniquely defines a projection:</p>
+            <div class="box" data-title="Theorem">
+                <p>
+                If \(\vsX,\vsY\subseteq\vsH\) are closed subspaces with 
+                \(\vsH=\vsX\oplus\vsY\quad\)<br/>
+                \(\LRA \) \(\exists\) unique \(P=P^2\in\vsL\) with
+                \(\vsR(P)=\vsX\) and \(\vsN(P)=\vsY\).
+                </p>
+            </div>
+            This motivates the following notation...
+        </article>
+    </slide>
+    
+    <slide>
+        <hgroup>
+            <h2>Handy notation of projections</h2>
+        </hgroup>
+        <article>
+            <div class="box" data-title="Definition">
+                For two closed subspaces \(\vsX,\vsY\subseteq\vsH\) with
+                \(\vsH=\vsX\oplus\vsY\) we denote by 
+                \[P_{\vsX,\vsY}\]
+                the projection in \(\vsL\) onto \(\vsR(P_{\vsX,\vsY})=\vsX\)
+                along \(\vsN(P_{\vsX,\vsY})=\vsY\).
+            </div>
+            <p>The following important subclass of projections gets its own
+            notation:</p>
+            <div class="box" data-title="Defintion">
+                For a closed subspaces \(\vsX\subseteq\vsH\) we denote the
+                <strong>orthogonal projection</strong> onto \(\vsX\) by 
+                \[P_\vsX := P_{\vsX,\vsX^\perp}.\]
+            </div>
+            <p>A non-orthogonal projection is called an
+            <strong>oblique projection</strong>.</p>
+        </article>
+    </slide>
+
+    <slide id="slide_picz">
+        <hgroup>
+            <h2>Picz orthogonal vs. oblique</h2>
+        </hgroup>
+        <article style="position: relative;">
+            <figure style="width: 48%; position: absolute; top: 0; left: 0;">
+                <div id="proj_ortho" class="jxgbox plot"></div>
+                <figcaption>Orthogonal projection \(P_{\vsX} z = X \ip{X}{X}^{-1} \ip{X}{z}\)</figcaption>
+            </figure>
+            <script type="text/javascript">
+                proj_ortho = null;
+                onSlideEnter('slide_picz', function() {
+                    if (!proj_ortho) {
+                        var b = JXG.JSXGraph.initBoard('proj_ortho', {boundingbox: [-2, 2, 2, -2],keepaspectratio: true});
+                        var p0 = b.create('point',[0,0], {name:'0',size:4,fixed:true,color:'#0000ff'});
+                        var px = b.create('point',[1,0], {name:'X',size:4,color:'#0000ff',withLabel:false});
+                        addMathLabel(b, px, '\\(\\vsX\\)');
+                        var lX = b.create('line',['0','X']);
+                        var pz = b.create('point', [-1,1], {name:'z',zize:4,withLabel:false});
+                        addMathLabel(b, pz, '\\(z\\)');
+                        function orthoproj() {
+                            return proj( [px.X(),px.Y()], [px.X(),px.Y()], [pz.X(),pz.Y()]);
+                        }
+                        var Pz = b.create('point', [function() {return orthoproj()[0];}, function() {return orthoproj()[1];}], {name:'Pz',size:4,withLabel:false});
+                        addMathLabel(b, Pz, '\\(P_\\vsX z\\)');
+                        var lzPz = b.create('line', ['z','Pz'], {straightFirst:false, straightLast:false, strokeWidth:2, dash:2});
+                        proj_ortho = b;
+                    }
+                });
+            </script>
+            <figure style="width: 48%; position: absolute; top: 0; right: 0;">
+                <div id="proj_obli" class="jxgbox plot"></div>
+                <figcaption>
+                    Oblique projection 
+                    \(P_{\vsX,\vsY} z = X \ip{Y^\perp}{X}^{-1} \ip{Y^\perp}{z}\)
+                    where \(\vsY^\perp=\vsR(Y^\perp)\).
+                </figcaption>
+            </figure>
+            <script type="text/javascript">
+                proj_obli = null;
+                onSlideEnter('slide_picz', function() {
+                    if(!proj_obli) {
+                        var b = JXG.JSXGraph.initBoard('proj_obli', {boundingbox: [-2, 2, 2, -2],keepaspectratio: true});
+                        var p0 = b.create('point',[0,0], {name:'0',size:4,fixed:true,color:'#0000ff'});
+                        var px = b.create('point',[1,0], {name:'X',size:4,color:'#0000ff',withLabel:false});
+                        addMathLabel(b, px, '\\(\\vsX \\)');
+                        var lX = b.create('line',['0','X']);
+                        var py = b.create('point',[-0.5,1], {name:'Y',size:4,color:'#0000ff',withLabel:false});
+                        addMathLabel(b, py, '\\(\\vsY \\)');
+                        var lY = b.create('line',['0','Y']);
+                        var pz = b.create('point', [-1,1], {name:'z',zize:4,withLabel:false});
+                        addMathLabel(b, pz, '\\(z \\)');
+                        function obliqueproj() {
+                            return proj( [px.X(),px.Y()], [py.Y(),-py.X()], [pz.X(),pz.Y()]);
+                        }
+                        var Pz = b.create('point', [function() {return obliqueproj()[0];}, function() {return obliqueproj()[1];}], {name:'Pz',size:4,withLabel:false});
+                        addMathLabel(b, Pz, '\\(P_{\\vsX,\\vsY}z \\)');
+                        var lzPz = b.create('line', ['z','Pz'], {straightFirst:false, straightLast:false, strokeWidth:2, dash:2});
+                        proj_obli = b;
+                    }
+                });
+            </script>
+        </article>
+    </slide>
+
+    <slide>
+        <hgroup>
+            <h2>Adjoint and complementary projection</h2>
+        </hgroup>
+        <article>
+            <div class="box" data-title="Theorem">
+                Let \(\vsX,\vsY\subseteq\vsH\) be closed such that
+                \(\vsH=\vsX\oplus\vsY\). Then:
+                <ol>
+                    <li>
+                        The <strong>adjoint operator</strong> of
+                        \(P_{\vsX,\vsY}\) is
+                        \(P_{\vsX,\vsY}^\star=P_{\vsY^\perp,\vsX^\perp}\) and
+                        \(\nrm{P_{\vsX,\vsY}}=\nrm{P_{\vsY^\perp,\vsX^\perp}}\)
+                        holds.
+                    </li>
+                    <li>
+                        The <strong>complementary operator</strong> of
+                        \(P_{\vsX,\vsY}\) is 
+                        \(\id - P_{\vsX,\vsY}=P_{\vsY,\vsX}\) and
+                        \(\nrm{P_{\vsX,\vsY}}=\nrm{P_{\vsY,\vsX}}\) holds.
+                    </li>
+                </ol>
+            </div>
+            <p>The norm equality for the complementary operator
+            <ul>
+                <li>is very handy in practice,</li>
+                <li>is not obvious,</li>
+                <li>does not seem to be widely known,</li>
+                <li>has been proven in many ways; see e.g. Szyld, <em>The many
+                    proofs of an identity on the norm of oblique
+                    projections</em> (2006).</li>
+            </ul>
+            </p>
+        </article>
+    </slide>
+
+    <slide>
+        <hgroup>
+            <h2>Orthogonal = self-adjoint</h2>
+        </hgroup>
+        <article>
+            <div class="box" data-title="Corollary">
+                For \(P=P^2\in\vsL\) the following statements are equivalent:
+                <ol>
+                    <li>\(P\) is orthogonal.</li>
+                    <li>\(P=P^\star\), i.e. \(P\) is self-adjoint.
+                </ol>
+            </div>
+            <p>Some folks believe that <strong>all</strong> projections are
+            orthogonal; beware of the literature!</p>
+        </article>
+    </slide>
+
+    <slide>
+        <hgroup>
+            <h2>Minimal angle</h2>
+        </hgroup>
+        <article>
+            <div class="box" data-title="Defintion">
+                For two closed and nonzero subspaces \(\vsX,\vsY\subseteq\vsH\)
+                we define the <strong>minimal canonical angle</strong>
+                \(\theta_{\min}(\vsX,\vsY)\in[0,\frac{\pi}{2}]\) by
+                \[
+                    \cos \theta_{\min} (\vsX,\vsY)
+                    = \sup_{
+                    \substack{x\in\vsX,\nrm{x}=1\\ y\in\vsY,\nrm{y}=1}}
+                    \left|\ip{x}{y}\right|
+                \]
+            </div>
+            <p>Some practical formulas:</p>
+            <div class="box" data-title="Lemma">
+                <ol>
+                    <li>\(\cos \theta_{\min}(\vsX,\vsY)=
+                        \nrm{P_\vsX P_\vsY}=
+                        \nrm{P_\vsY P_\vsX}\).
+                    </li>
+                    <li>\(\left|\ip{x}{y}\right|\leq 
+                        \nrm{x}\nrm{y}\cos \theta_{\min}(\vsX,\vsY)\) for all 
+                        \((x,y)\in\vsX\times\vsY\),<br/>
+                        the "subspace" Cauchy-Schwarz inequality.
+                    </li>
+                </ol>
+            </div>
+        </article>
+    </slide>
+
+    <slide>
+        <hgroup>
+            <h2>Maximal angle</h2>
+        </hgroup>
+        <article>
+            <div class="box" data-title="Defintion">
+                For two closed and nonzero subspaces \(\vsX,\vsY\subseteq\vsH\)
+                we define the <strong>maximal canonical angle</strong>
+                \(\theta_{\max}(\vsX,\vsY)\in[0,\frac{\pi}{2}]\) by
+                \[
+                    \sin \theta_{\max} (\vsX,\vsY)
+                    = \nrm{P_\vsX - P_\vsY}.
+                \]
+            </div>
+            <p>Some more practical formulas:</p>
+            <div class="box" data-title="Lemma">
+                Let \(\vsX,\vsY\subseteq\vsH\) be closed and nonzero such that
+                \(\vsH=\vsX\oplus\vsY\). Then:
+                <ol>
+                    <li>\(\nrm{P_{\vsX,\vsY}}=
+                    \frac{1}{ \cos\theta_{\max} (\vsX,\vsY^\perp)}\).
+                    </li>
+                    <li>
+                    \(\theta_{\min} (\vsX,\vsY) + \theta_{\max} (\vsX,\vsY^\perp) 
+                    = \frac{\pi}{2}\)
+                    </li>
+                </ol>
+            </div>
+        </article>
+    </slide>
+    
+    <slide>
+        <hgroup>
+            <h2>What is it good for?</h2>
+            <h3>An example, part 1/2</h3>
+        </hgroup>
+        <article>
+            <ul>
+                <li>Assume you have a self-adjoint operator \(L\in\vsL\) and 
+                    you want to solve \(Lx=b\) with CG or MINRES.
+                </li>
+                <li>You would like to modify the spectrum \(\Lambda(L)\) by using an 
+                    <strong>exactly</strong> \(L\)-invariant subspace 
+                    \(\vsV\) such that the spectrum 
+                    \(\Lambda(LP_{\vsV^\perp})\subseteq\Lambda(L)\) is "nice" 
+                    and then solve \(LP_{\vsV^\perp}\widetilde{x}=b\) 
+                    (possible with corrected initial guess).
+                </li>
+                <li>But all you have is an <strong>approximation</strong>
+                    \(\vsX\) to \(\vsV\). To retain self-adjointness you then 
+                    can solve \(LP_{(L\vsX)^\perp,\vsX}\widehat{x}=b\).
+                </li>
+                <li>Question: 
+                How "far" is 
+                \(\Lambda(LP_{(L\vsX)^\perp,\vsX})\) from
+                \(\Lambda(L P_{\vsV^\perp})\)?
+                </li>
+            </ul>
+        </article>
+    </slide>
+
+    <slide>
+        <hgroup>
+            <h2>What is it good for?</h2>
+            <h3>An example, part 2/2</h3>
+        </hgroup>
+        <article>
+            <p>The simplest approach is to use Weyl's theorem:</p>
+            <div class="box" data-title="Theorem">
+                Let \(A,E\in\vsL\) be self-adjoint.
+                \[ \LRA~\Lambda(A+E)\subseteq\{ \lambda\in\R ~\big|~
+                \mathsf{dist}(\lambda,\Lambda(A))\leq\nrm{E}\}. \]
+            </div>
+            <p>Here: \(A=LP_{\vsV^\perp}\) and
+            \(E=L(P_{(L\vsX)^\perp,\vsX}-P_{\vsV^\perp})\).</p>
+            <p>\(\nrm{E}=\nrm{L(P_{(L\vsX)^\perp,\vsX}-P_{\vsV^\perp})}
+            \leq\nrm{L}\nrm{P_{(L\vsX)^\perp,\vsX}-P_{\vsV^\perp}}\)</p>
+            <p>Question: can we bound the norm of the difference of two (oblique) 
+            projections?</p>
+        </article>
+    </slide>
+    
+    <slide>
+        <hgroup>
+            <h2>A (new?) bound</h2>
+        </hgroup>
+        <article>
+            <div class="box" data-title="Theorem">
+                Let \(\vsV,\vsW,\vsX,\vsY\subseteq\vsH\) be closed and nonzero
+                subspaces such that \(\vsH=\vsV\oplus\vsW=\vsX\oplus\vsY\).
+                Then:
+                \[
+                \nrm{P_{\vsV,\vsW}-P_{\vsX,\vsY}}
+                \leq \frac{
+                \cos\theta_{\min}(\vsW^\perp,\vsY) + 
+                \cos\theta_{\min}(\vsV^\perp,\vsX)}{
+                \cos\theta_{\max}(\vsV,\vsW^\perp) 
+                \cos\theta_{\max}(\vsX,\vsY^\perp)}.
+                \]
+            </div>
+            <ul>
+                <li>For the example given before, these angles can then be tackled
+                    with the Davis-Kahan perturbation theory.
+                </li>
+                <li>The Davis-Kahan bounds
+                are based on computable residuals and a spectral gap.</li>
+                <li>The spectral gap is unknown in general and can only be estimated.
+                </li>
+            </ul>
+        </article>
+    </slide>
+
+    <slide id="slide_bound">
+        <hgroup>
+            <h2>Bounds in action</h2>
+        </hgroup>
+        <article>
+            <figure style="width: 100%; ">
+                <div id="proj_bound" class="jxgbox plot"></div>
+                <figcaption>
+                    \(\nrm{P_{\vsX,\vsY}z-P_{\vsV,\vsW}z}=\)&nbsp;<span id="normresult">0.0</span>,<br/>
+                    bound: \(\frac{
+                \cos\theta_{\min}(\vsW^\perp,\vsY) + 
+                \cos\theta_{\min}(\vsV^\perp,\vsX)}{
+                \cos\theta_{\max}(\vsV,\vsW^\perp) 
+                \cos\theta_{\max}(\vsX,\vsY^\perp)}
+                \) = <span id="boundresult">0.0</span>.
+                </figcaption>
+            </figure>
+            <script type="text/javascript">
+                proj_bound = null;
+                onSlideEnter('slide_bound', function() {
+                    if(!proj_bound) {
+                        var b = JXG.JSXGraph.initBoard('proj_bound', {boundingbox: [-3, -1.5, 3, 1.5],keepaspectratio: true});
+                        var p0 = b.create('point',[0,0], {name:'0',size:4,fixed:true,color:'#000000'});
+                        var c = b.create('circle', [p0, 1]);
+                        var pz = b.create('glider', [1,1,c], {name:'z',size:4,withLabel:false});
+                        addMathLabel(b, pz, '\\(z \\)');
+
+                        var px = b.create('point',[-1.2,0], {name:'X',size:4,color:'#0000ff',withLabel:false});
+                        addMathLabel(b, px, '\\(\\vsX \\)');
+                        var lX = b.create('line',['0','X']);
+                        var py = b.create('point',[-0.5,1], {name:'Y',size:4,color:'#0000ff',withLabel:false});
+                        addMathLabel(b, py, '\\(\\vsY \\)');
+                        var lY = b.create('line',['0','Y']);
+                        addMathLabel(b, pz, '\\(z \\)');
+                        function projXY() {
+                            return proj( [px.X(),px.Y()], [py.Y(),-py.X()], [pz.X(),pz.Y()]);
+                        }
+                        var PXYz = b.create('point', [function() {return projXY()[0];}, function() {return projXY()[1];}], {name:'PXYz',size:4,withLabel:false});
+                        addMathLabel(b, PXYz, '\\(P_{\\vsX,\\vsY}z \\)');
+                        var lzPXYz = b.create('line', ['z','PXYz'], {straightFirst:false, straightLast:false, strokeWidth:2, dash:2});
+
+                        var pv = b.create('point',[-1.2,0.2], {name:'V',size:4,color:'#5E5E5E',withLabel:false});
+                        addMathLabel(b, pv, '\\(\\vsV \\)');
+                        var lV = b.create('line',['0','V'],{strokeColor:'#5E5E5E'});
+                        var pw = b.create('point',[-0.7,1], {name:'W',size:4,color:'#5E5E5E',withLabel:false});
+                        addMathLabel(b, pw, '\\(\\vsW \\)');
+                        var lW = b.create('line',['0','W'],{strokeColor:'#5E5E5E'});
+                        function projVW() {
+                            return proj( [pv.X(),pv.Y()], [pw.Y(),-pw.X()], [pz.X(),pz.Y()]);
+                        }
+                        var PVWz = b.create('point', [function() {return projVW()[0];}, function() {return projVW()[1];}], {name:'PVWz',size:4,withLabel:false});
+                        var lPVWXYz = b.create('line',['PVWz','PXYz'],{strokeColor:'#ff0000', straightFirst:false, straightLast:false, strokeWidth:2});
+
+                        addMathLabel(b, PVWz, '\\(P_{\\vsV,\\vsW}z \\)');
+                        var lzPVWz = b.create('line', ['z','PVWz'], {straightFirst:false, straightLast:false, strokeWidth:2, dash:2,strokeColor:'#5E5E5E'});
+
+                        b.addHook(function(){
+                                var x = [px.X(),px.Y()],
+                                    y = [py.X(),py.Y()],
+                                    v = [pv.X(),pv.Y()],
+                                    w = [pw.X(),pw.Y()],
+                                    zXY = [PXYz.X(),PXYz.Y()],
+                                    zVW = [PVWz.X(),PVWz.Y()];
+                                var normreal = norm(daxpy(-1,zXY,zVW));
+                                var normspan = document.getElementById('normresult');
+                                normspan.replaceChild( document.createTextNode(normreal.toFixed(4)), normspan.firstChild);
+
+                                var cosa = Math.abs(inner(w,y)/(norm(w)*norm(y)));
+                                var cosb = Math.abs(inner(x,v)/(norm(x)*norm(v)));
+                                var cosg = Math.abs(inner(v,orth(w))/(norm(v)*norm(orth(w))));
+                                var cosd = Math.abs(inner(x,orth(y))/(norm(x)*norm(orth(y))));
+                                var bound = (Math.sin(Math.acos(cosa))+Math.sin(Math.acos(cosb)))/(cosg*cosd);
+                                var boundspan = document.getElementById('boundresult');
+                                boundspan.replaceChild( document.createTextNode(bound.toFixed(4)), boundspan.firstChild);
+
+                            }, 'move');
+
+                        proj_bound = b;
+                    }
+                });
+            </script>
+        </article>
+    </slide>
+
+    <slide id="slide_bound">
+        <hgroup>
+            <h2>Conclusion</h2>
+        </hgroup>
+        <article>
+            <ul>
+                <li>Everything presented here also works in infinite
+                dimensional Hilbert spaces (those are harder to visualize
+                😉).</li>
+                <li>For the given example, better spectral perturbation bounds
+                can be obtained with a different strategy.</li>
+                <li>There's much more to say about projections, angles and 
+                spectral perturbations.</li>
+                <li>Unfortunately, results on projections are scattered
+                throughout the literature and often presented for a special
+                case only.</li>
+                <li>I scanned the literature thoroughly and put up a long list
+                of useful properties for my PhD thesis. If you're interested: come
+                around (and bring coffee)!</li>
+            </ul>
+        </article>
+    </slide>
+
+    <slide class="thank-you-slide segue nobackground">
+        <aside class="gdbar right"><img src="images/matheon-logo-color.svg"></aside>
+        <article class="flexbox vleft auto-fadein">
+            <h2>Thank you!</h2>
+            <p>Questions?</p>
+        </article>
+        <p class="auto-fadein" data-config-contact>
+        <!-- populated from slide_config.json -->
+        </p>
+    </slide>
+
+    <slide class="dark nobackground">
+        <article class="flexbox vcenter">
+            <!--span><img src="images/google_developers_logo_white.png"></span-->
+            <div class="logoslide"><img src="images/matheon-w-text-white.svg"></div>
+            <div><img style="width: 150px; margin-top:100px;" src="images/html5rocks.png"></div>
+        </article>
+    </slide>
+
+    <slide class="backdrop"></slide>
+
+</slides>
+
+<!--[if IE]>
+  <script src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js"></script>
+  <script>CFInstall.check({mode: 'overlay'});</script>
+<![endif]-->
+</body>
+</html>
